@@ -67,7 +67,7 @@ namespace Mirror
 
             RegisterSystemHandlers(false);
             Transport.activeTransport.enabled = true;
-            InitializeTransportHandlers();
+            AddTransportHandlers();
 
             connectState = ConnectState.Connecting;
             Transport.activeTransport.ClientConnect(address);
@@ -88,7 +88,7 @@ namespace Mirror
 
             RegisterSystemHandlers(false);
             Transport.activeTransport.enabled = true;
-            InitializeTransportHandlers();
+            AddTransportHandlers();
 
             connectState = ConnectState.Connecting;
             Transport.activeTransport.ClientConnect(uri);
@@ -145,12 +145,20 @@ namespace Mirror
             }
         }
 
-        static void InitializeTransportHandlers()
+        static void AddTransportHandlers()
         {
-            Transport.activeTransport.OnClientConnected.AddListener(OnConnected);
-            Transport.activeTransport.OnClientDataReceived.AddListener(OnDataReceived);
-            Transport.activeTransport.OnClientDisconnected.AddListener(OnDisconnected);
-            Transport.activeTransport.OnClientError.AddListener(OnError);
+            Transport.activeTransport.ClientConnectedCallback = OnConnected;
+            Transport.activeTransport.ClientDataReceivedCallback = OnDataReceived;
+            Transport.activeTransport.ClientDisconnectedCallback = OnDisconnected;
+            Transport.activeTransport.ClientErrorCallback = OnError;
+        }
+
+        static void RemoveTransportHandlers()
+        {
+            Transport.activeTransport.ClientConnectedCallback = null;
+            Transport.activeTransport.ClientDataReceivedCallback = null;
+            Transport.activeTransport.ClientDisconnectedCallback = null;
+            Transport.activeTransport.ClientErrorCallback = null;
         }
 
         static void OnError(Exception exception)
@@ -219,15 +227,6 @@ namespace Mirror
                     RemoveTransportHandlers();
                 }
             }
-        }
-
-        static void RemoveTransportHandlers()
-        {
-            // so that we don't register them more than once
-            Transport.activeTransport.OnClientConnected.RemoveListener(OnConnected);
-            Transport.activeTransport.OnClientDataReceived.RemoveListener(OnDataReceived);
-            Transport.activeTransport.OnClientDisconnected.RemoveListener(OnDisconnected);
-            Transport.activeTransport.OnClientError.RemoveListener(OnError);
         }
 
         /// <summary>

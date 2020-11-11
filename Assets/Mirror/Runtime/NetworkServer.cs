@@ -90,10 +90,7 @@ namespace Mirror
                     Transport.activeTransport.ServerStop();
                 }
 
-                Transport.activeTransport.OnServerDisconnected.RemoveListener(OnDisconnected);
-                Transport.activeTransport.OnServerConnected.RemoveListener(OnConnected);
-                Transport.activeTransport.OnServerDataReceived.RemoveListener(OnDataReceived);
-                Transport.activeTransport.OnServerError.RemoveListener(OnError);
+                RemoveTransportHandlers();
 
                 initialized = false;
             }
@@ -138,10 +135,7 @@ namespace Mirror
             connections.Clear();
 
             logger.Assert(Transport.activeTransport != null, "There was no active transport when calling NetworkServer.Listen, If you are calling Listen manually then make sure to set 'Transport.activeTransport' first");
-            Transport.activeTransport.OnServerDisconnected.AddListener(OnDisconnected);
-            Transport.activeTransport.OnServerConnected.AddListener(OnConnected);
-            Transport.activeTransport.OnServerDataReceived.AddListener(OnDataReceived);
-            Transport.activeTransport.OnServerError.AddListener(OnError);
+            AddTransportHandlers();
         }
 
         internal static void RegisterMessageHandlers()
@@ -488,6 +482,22 @@ namespace Mirror
                     conn.Disconnect();
                 }
             }
+        }
+
+        static void AddTransportHandlers()
+        {
+            Transport.activeTransport.ServerConnectedCallback = OnConnected;
+            Transport.activeTransport.ServerDataReceivedCallback = OnDataReceived;
+            Transport.activeTransport.ServerDisconnectedCallback = OnDisconnected;
+            Transport.activeTransport.ServerErrorCallback = OnError;
+        }
+
+        static void RemoveTransportHandlers()
+        {
+            Transport.activeTransport.ServerConnectedCallback = null;
+            Transport.activeTransport.ServerDataReceivedCallback = null;
+            Transport.activeTransport.ServerDisconnectedCallback = null;
+            Transport.activeTransport.ServerErrorCallback = null;
         }
 
         static void OnConnected(int connectionId)
