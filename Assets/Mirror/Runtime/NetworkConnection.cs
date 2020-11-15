@@ -248,10 +248,12 @@ namespace Mirror
                     if (logger.LogEnabled()) logger.Log("ConnectionRecv " + this + " msgType:" + msgType + " content:" + BitConverter.ToString(buffer.Array, buffer.Offset, buffer.Count));
 
                     // try to invoke the handler for that message
-                    if (InvokeHandler(msgType, networkReader, channelId))
+                    if (messageHandlers.TryGetValue(msgType, out NetworkMessageDelegate msgDelegate))
                     {
+                        msgDelegate.Invoke(this, networkReader, channelId);
                         lastMessageTime = Time.time;
                     }
+                    else if (logger.LogEnabled()) logger.Log("Unknown message ID " + msgType + " " + this + ". May be due to no existing RegisterHandler for this message.");
                 }
                 else
                 {
